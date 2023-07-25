@@ -24,6 +24,8 @@ typedef enum rung_buffer_err {
     RB_ERR_NO_DATA
 } ring_buffer_err_t;
 
+
+size_t get_power_of_two(size_t n);
 ring_buffer_err_t rb_init_default(ring_buffer_t *rb);
 ring_buffer_err_t rb_init(ring_buffer_t *rb, size_t size);
 ring_buffer_err_t rb_add(ring_buffer_t *rb,uint64_t value);

@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <math.h>
 
 #include "ring_buffer.h"
 
@@ -29,6 +30,10 @@ static bool power_of_two_number(size_t n)
 ring_buffer_err_t rb_init_default(ring_buffer_t *rb)
 {
     return rb_init(rb, 36);
+}
+
+size_t get_power_of_two(size_t n) {
+    return pow(2, ceil(log(n)/log(2)));
 }
 
 ring_buffer_err_t rb_init(ring_buffer_t *rb, size_t size)
@@ -60,6 +65,26 @@ ring_buffer_err_t rb_init(ring_buffer_t *rb, size_t size)
     return RB_ERR_OK;
 }
 
+/**
+ * @brief Add a value to the buffer 
+ *
+ * @note The bitwise opperations work to wrap the value of read and write (head
+ * and tail) because of we are using power of two numbers. A power of two number
+ * can translates to a binary representation that is exploitable through a trick
+ * of bitwise aristhmatic because binary is base 2.   
+ *
+ * For instance 4 is 0100 and 3 (4-1) is 0011, which means that 0100 & 0011 will
+ * always be 0 
+ * 
+ * 0011 
+ * 0100
+ * ----
+ * 0000
+ *
+ * @param rb 
+ * @param value 
+ * @return ring_buffer_err_t 
+ */
 ring_buffer_err_t rb_add(ring_buffer_t *rb, uint64_t value)
 {
     if (rb == NULL)
@@ -67,10 +92,13 @@ ring_buffer_err_t rb_add(ring_buffer_t *rb, uint64_t value)
         return RB_ERR_NULL_VALUE;
     }
 
+    // Prevent the head wraapping back to the tail.
     if (rb->items + 1 != rb->size)
     {
         rb->buffer[rb->write++] = value;
 
+        // Because this is a bitwise operator we can execute this in a single
+        // instruction
         rb->write = (rb->write & (rb->size - 1));
         rb->items++;
         return RB_ERR_OK;
@@ -95,6 +123,7 @@ ring_buffer_err_t rb_test(ring_buffer_t *rb)
 
 uint64_t rb_get(ring_buffer_t *rb)
 {
+    // Prevent the read function going past the head
     if (rb->items == 0)
     {
         return 0;
