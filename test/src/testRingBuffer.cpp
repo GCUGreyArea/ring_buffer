@@ -83,3 +83,15 @@ TEST(ring_buffer,test_ring_buffer_can_add) {
 
     rb_teardown(&rb);    
 }
+
+TEST(ring_buffer,test_big_ring_buffer) {
+
+    ring_buffer_t rb;
+    size_t size = 134217728; // 2^27
+
+    ring_buffer_err_t er = rb_init(&rb,size);
+
+    ASSERT_EQ(er,RB_ERR_OK);
+
+    rb_teardown(&rb);    
+}
