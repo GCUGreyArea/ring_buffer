@@ -21,7 +21,7 @@
 
 #include "ring_buffer.h"
 
-static bool power_of_two_number(uint16_t n)
+static bool power_of_two_number(size_t n)
 {
     return (n != 0) && ((n & (n - 1)) == 0);
 }
@@ -31,7 +31,7 @@ ring_buffer_err_t rb_init_default(ring_buffer_t *rb)
     return rb_init(rb, 36);
 }
 
-ring_buffer_err_t rb_init(ring_buffer_t *rb, uint16_t size)
+ring_buffer_err_t rb_init(ring_buffer_t *rb, size_t size)
 {
     if (rb == NULL)
     {

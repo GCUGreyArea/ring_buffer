@@ -10,10 +10,10 @@
 
 typedef struct ring_buffer {
     uint64_t * buffer;
-    uint16_t write;
-    uint16_t read;
-    uint16_t size;
-    uint16_t items;
+    size_t write;
+    size_t read;
+    size_t size;
+    size_t items;
 } ring_buffer_t;
 
 typedef enum rung_buffer_err {
@@ -25,7 +25,7 @@ typedef enum rung_buffer_err {
 } ring_buffer_err_t;
 
 ring_buffer_err_t rb_init_default(ring_buffer_t *rb);
-ring_buffer_err_t rb_init(ring_buffer_t *rb, uint16_t size);
+ring_buffer_err_t rb_init(ring_buffer_t *rb, size_t size);
 ring_buffer_err_t rb_add(ring_buffer_t *rb,uint64_t value);
 ring_buffer_err_t rb_test(ring_buffer_t *rb);
 uint64_t rb_get(ring_buffer_t *rb);
