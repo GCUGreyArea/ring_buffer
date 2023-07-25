@@ -3,20 +3,22 @@
 
 #include <libProducerConsumer.h>
 
+#define RB_SIZE 134217728
+
 static void BM_AddGetBuffer(benchmark::State &state) {
     ring_buffer_t rb;
-    ring_buffer_err_t er = rb_init(&rb,256);
+    ring_buffer_err_t er = rb_init(&rb,RB_SIZE);
     if(er != RB_ERR_OK) {
         printf("failed to create ring buffer\n");
         abort();
     }
 
     for (auto _ : state) {
-        for(int i=0; i<256; i++) {
+        for(size_t i=0; i<RB_SIZE; i++) {
             rb_add(&rb,i);
         }
 
-        for(int i=0; i < 256; i++) {
+        for(size_t i=0; i < RB_SIZE; i++) {
             rb_get(&rb);
         }
     }
