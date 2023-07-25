@@ -95,3 +95,13 @@ TEST(ring_buffer,test_big_ring_buffer) {
 
     rb_teardown(&rb);    
 }
+
+TEST(ring_buffer,test_power_of_two) {
+    size_t p = get_power_of_two(31);
+
+    ASSERT_EQ(32,p);
+
+    p = get_power_of_two(37);
+
+    ASSERT_EQ(64,p);
+}
