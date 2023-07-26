@@ -8,6 +8,12 @@
 
 #define RB_SIZE 32
 
+/**
+ * @brief Called as the consumer thread
+ * 
+ * @param ptr 
+ * @return void* 
+ */
 void *run_consumer(void *ptr)
 {
     printf("running consumer\n");
@@ -35,6 +41,13 @@ void *run_consumer(void *ptr)
     return ptr;
 }
 
+
+/**
+ * @brief Called as the producer thread
+ * 
+ * @param ptr 
+ * @return void* 
+ */
 void *run_producer(void *ptr)
 {
     printf("running producer\n");
@@ -60,6 +73,16 @@ void *run_producer(void *ptr)
     return ptr;
 }
 
+/**
+ * @brief Run two simltanious process as producer and consumer 
+ *
+ * @note For a better understanding of pthreads see
+ * https://www.cs.cmu.edu/afs/cs/academic/class/15492-f07/www/pthreads.html
+ *
+ * @param argc 
+ * @param argv 
+ * @return int 
+ */
 int main(int argc, const char **argv)
 {
     ring_buffer_t rb;
