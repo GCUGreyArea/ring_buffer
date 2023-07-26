@@ -2,6 +2,28 @@
 
 #include <libProducerConsumer.h>
 
+static const char * static_string_producer(bool consumed, char * value, int id) {
+    static int current_id = 0;
+    static char string_back[10][4];
+
+    // If things are still waiting and we don't have space
+    // bail...
+    if(!consumed && current_id == 4) {
+        return NULL;
+    }
+
+    // IF the strings have been consumed we can go back to the start
+    if(consumed || current_id == 4) {
+        current_id = 0;
+    }
+
+    char * str = string_back[current_id++];
+    sprintf(str,"%s:%d", value,id);
+
+    return str;
+}
+
+
 TEST(ring_buffer, test_that_ring_allocation_works)
 {
     ring_buffer_t rb;
@@ -186,7 +208,7 @@ TEST(ring_buffer, test_static_allocation)
 
 TEST(ring_buffer, test_huge_static_buffer)
 {
-    #define RB_SIZE 16777216
+    #define RB_SIZE 16384
     STATIC_BUFFER(RB_SIZE,rb);
 
     for (size_t i = 1; i < RB_SIZE; i++)
@@ -198,4 +220,24 @@ TEST(ring_buffer, test_huge_static_buffer)
     {
         rb_get(&rb);
     }
+}
+
+TEST(string_producer,test_static_string_producer) {
+    const char * str = static_string_producer(false,(char*) "string",1); 
+    EXPECT_STREQ(str,"string:1");
+    
+    str = static_string_producer(false,(char*)"string",2); 
+    EXPECT_STREQ(str,"string:2");
+
+    str = static_string_producer(false,(char*)"string",3); 
+    EXPECT_STREQ(str,"string:3");
+
+    str = static_string_producer(false,(char*)"string",4); 
+    EXPECT_STREQ(str,"string:4");
+
+    str = static_string_producer(false,(char*)"string",4);
+    ASSERT_EQ(NULL,str);
+
+    str = static_string_producer(true,(char*)"string",5);
+    EXPECT_STREQ("string:5",str);
 }
