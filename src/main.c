@@ -9,6 +9,42 @@
 #define RB_SIZE 32
 
 /**
+ * @brief Generate a static string without and use one from a local memory from
+ * a local store rathern that using malloced heap memory 
+ *
+ * @param consumed flagg indicating that the previous strings have been consumed  
+ * @param value value to use as tghe first part of the string
+ * @param id id to use as the next part
+ * @return const char* 
+ */
+static const char * static_string_producer(bool consumed, char * value, int id) {
+
+    // Because these are static they will persist after the function exectution
+    // terminates! Current ID keeps track of how many times we have been called
+    // and is used to index into the string store.
+    static int current_id = 0;
+
+    // RB_SIZE string ogf 10 characters each!
+    static char string_back[RB_SIZE][10];
+
+    // If things are still waiting and we don't have space
+    // bail...
+    if(!consumed && current_id == RB_SIZE) {
+        return NULL;
+    }
+
+    // IF the strings have been consumed we can go back to the start
+    if(consumed || current_id == RB_SIZE) {
+        current_id = 0;
+    }
+
+    char * str = string_back[current_id++];
+    sprintf(str,"%s:%d", value,id);
+
+    return str;
+}
+
+/**
  * @brief Called as the consumer thread
  * 
  * @param ptr 
@@ -27,12 +63,11 @@ void *run_consumer(void *ptr)
             uint64_t val = rb_get(rb);
             char *str = (char *)val;
             printf("received %s\n", str);
-            free(str);
         }
         else
         {
-            printf("consummer sleeping (2): %d\n",inc++); 
-            sleep(2);
+            printf("consummer sleeping (1): %d\n",inc++); 
+            sleep(1);
         }
 
                
@@ -52,7 +87,8 @@ void *run_producer(void *ptr)
 {
     printf("running producer\n");
     ring_buffer_t *rb = (ring_buffer_t *)ptr;
-    char *string = NULL;
+    const char *string = NULL;
+    bool consumed = false;
 
     while (true)
     {
@@ -61,9 +97,22 @@ void *run_producer(void *ptr)
             ring_buffer_err_t er = rb_test(rb);
             if (er != RB_ERR_FULL)
             {
-                string = (char *)malloc(sizeof(char) * 35);
-                sprintf(string, "str:%d", i);
-                rb_add(rb, (uint64_t)string);
+                goto start;
+            retry:
+                printf("retrying\n");
+
+            start:
+
+                consumed = (rb_test(rb) == RB_ERR_NO_DATA);
+                if(consumed) {printf("Constumed\n");}
+                string = static_string_producer(consumed,"string",i);
+                if(string) {
+                    rb_add(rb, (uint64_t)string);
+                }
+                else {
+                    sleep(0.5);
+                    goto retry;
+                }
             }
         }
 
