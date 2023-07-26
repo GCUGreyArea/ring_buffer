@@ -8,6 +8,11 @@
 
 #define RB_SIZE 32
 
+
+typedef struct st_container {
+    char * string;
+    int * read_cnt;
+} st_container_t;
 /**
  * @brief Generate a static string without and use one from a local memory from
  * a local store rathern that using malloced heap memory 
@@ -17,31 +22,39 @@
  * @param id id to use as the next part
  * @return const char* 
  */
-static const char * static_string_producer(bool consumed, char * value, int id) {
+static const st_container_t * static_string_producer(char * value, int id) {
 
     // Because these are static they will persist after the function exectution
     // terminates! Current ID keeps track of how many times we have been called
     // and is used to index into the string store.
     static int current_id = 0;
+    static int cnt = 0;
 
     // RB_SIZE string ogf 10 characters each!
     static char string_back[RB_SIZE][10];
+    static st_container_t containers[RB_SIZE];
 
     // If things are still waiting and we don't have space
     // bail...
-    if(!consumed && current_id == RB_SIZE) {
+    if(cnt == RB_SIZE) {
         return NULL;
     }
 
-    // IF the strings have been consumed we can go back to the start
-    if(consumed || current_id == RB_SIZE) {
+    // If the strings have been consumed we can go back to the start
+    if(current_id == RB_SIZE) {
         current_id = 0;
     }
 
-    char * str = string_back[current_id++];
+    char * str = string_back[current_id];
     sprintf(str,"%s:%d", value,id);
 
-    return str;
+    cnt++;
+
+    // We pass in the address so that updates are reflected in this function!
+    containers[current_id].read_cnt = &cnt;
+    containers[current_id].string = str;
+    
+    return &containers[current_id++];
 }
 
 /**
@@ -61,8 +74,11 @@ void *run_consumer(void *ptr)
         if (er == RB_ERR_OK || er == RB_ERR_FULL)
         {
             uint64_t val = rb_get(rb);
-            char *str = (char *)val;
-            printf("received %s\n", str);
+            st_container_t *str = (st_container_t*)val;
+
+            // Decrement the read count so the producer can move on.
+            int v = --*(str->read_cnt);
+            printf("received %s count %d\n", str->string, v);
         }
         else
         {
@@ -87,8 +103,7 @@ void *run_producer(void *ptr)
 {
     printf("running producer\n");
     ring_buffer_t *rb = (ring_buffer_t *)ptr;
-    const char *string = NULL;
-    bool consumed = false;
+    const st_container_t *string = NULL;
 
     while (true)
     {
@@ -103,11 +118,10 @@ void *run_producer(void *ptr)
 
             start:
 
-                consumed = (rb_test(rb) == RB_ERR_NO_DATA);
-                if(consumed) {printf("Constumed\n");}
-                string = static_string_producer(consumed,"string",i);
+                string = static_string_producer("string",i);
                 if(string) {
                     rb_add(rb, (uint64_t)string);
+
                 }
                 else {
                     sleep(0.5);
