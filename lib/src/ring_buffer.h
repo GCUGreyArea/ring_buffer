@@ -10,17 +10,18 @@
 #include <math.h>
 
 typedef struct ring_buffer {
-    uint64_t * buffer;
-    size_t write;
-    size_t read;
-    size_t size;
-    size_t items;
+    uint64_t * buffer;  // The buffer 
+    size_t write;       // Write point (head of the ring)
+    size_t read;        // Read point (tail of the ring)
+    size_t size;        // Size of the buffer
+    size_t items;       // Items in the buffer
+    bool stat;          // Statically or dynamically assigned
 } ring_buffer_t;
 
 #define STATIC_BUFFER(size, name) \
-    size_t s = pow(2, ceil(log(size)/log(2))); \
+    const size_t s = pow(2, ceil(log(size)/log(2))); \
     uint64_t ar[s]; \
-    ring_buffer_t name = {ar,0,0,s,0}
+    ring_buffer_t name = {ar,0,0,s,0,true}
 
 typedef enum rung_buffer_err {
     RB_ERR_OK,

@@ -61,6 +61,7 @@ ring_buffer_err_t rb_init(ring_buffer_t *rb, size_t size)
     rb->read = 0;
     rb->write = 0;
     rb->items = 0;
+    rb->stat = false;
 
     return RB_ERR_OK;
 }
@@ -145,5 +146,7 @@ uint64_t rb_get(ring_buffer_t *rb)
 
 void rb_teardown(ring_buffer_t *rb)
 {
-    free(rb->buffer);
+    if(rb && !rb->stat) {
+        free(rb->buffer);
+    }
 }
