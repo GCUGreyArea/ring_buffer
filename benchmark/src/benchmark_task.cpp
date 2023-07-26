@@ -40,7 +40,6 @@ static void BM_AddGetStaticBuffer(benchmark::State &state) {
             rb_get(&rb);
         }
     }
-
 }
 
 // Register the function as a benchmark
@@ -49,9 +48,3 @@ BENCHMARK(BM_AddGetStaticBuffer);
 
 // Run the benchmark
 BENCHMARK_MAIN();
-
-/**
- * @}
- * @}
- *
- */
