@@ -2,11 +2,12 @@
 #define RING_BUFFER_H
 
 
-// #ifndef RING_BUFFER_SIZE
-// #define RING_BUFFER_SIZE (4^2)
-// #endif//RING_BUFFER_SIZE
+#ifndef RING_BUFFER_SIZE
+#define RING_BUFFER_SIZE 8
+#endif//RING_BUFFER_SIZE
 
 #include <stdint.h>
+#include <math.h>
 
 typedef struct ring_buffer {
     uint64_t * buffer;
@@ -15,6 +16,11 @@ typedef struct ring_buffer {
     size_t size;
     size_t items;
 } ring_buffer_t;
+
+#define STATIC_BUFFER(size, name) \
+    size_t s = pow(2, ceil(log(size)/log(2))); \
+    uint64_t ar[s]; \
+    ring_buffer_t name = {ar,0,0,s,0}
 
 typedef enum rung_buffer_err {
     RB_ERR_OK,
@@ -26,6 +32,7 @@ typedef enum rung_buffer_err {
 
 
 size_t get_power_of_two(size_t n);
+
 ring_buffer_err_t rb_init_default(ring_buffer_t *rb);
 ring_buffer_err_t rb_init(ring_buffer_t *rb, size_t size);
 ring_buffer_err_t rb_add(ring_buffer_t *rb,uint64_t value);

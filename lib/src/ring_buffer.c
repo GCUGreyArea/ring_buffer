@@ -29,7 +29,7 @@ static bool power_of_two_number(size_t n)
 
 ring_buffer_err_t rb_init_default(ring_buffer_t *rb)
 {
-    return rb_init(rb, 36);
+    return rb_init(rb, RING_BUFFER_SIZE);
 }
 
 size_t get_power_of_two(size_t n) {
@@ -74,8 +74,13 @@ ring_buffer_err_t rb_init(ring_buffer_t *rb, size_t size)
  * of bitwise aristhmatic because binary is base 2.   
  *
  * For instance 4 is 0100 and 3 (4-1) is 0011, which means that 0100 & 0011 will
- * always be 0 
- * 
+ * always be 0, but no other combination will produce the same results (i.e 0010
+ * (2) and 0011 (3) does not yeild 0 because 0010 & 0011 == 0010). 
+ *
+ * Because 2^n-1 a invers binary mask of 2^n (i.e. 4 is 0100 and 3 is
+ * 0011) anding will always return greater than 0 until the number reaches 2^n,
+ * at which point it will return 0.  
+ *
  * 0011 
  * 0100
  * ----
