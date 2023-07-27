@@ -14,6 +14,7 @@ typedef struct st_container {
     bool clear;
     pthread_mutex_t* lock;
 } st_container_t;
+
 /**
  * @brief Generate a static string without and use one from a local memory from
  * a local store rathern that using malloced heap memory 
@@ -23,8 +24,6 @@ typedef struct st_container {
  * @param id id to use as the next part
  * @return const char* 
  */
-
-
 static const st_container_t * static_string_producer(char * value, int id) {
 
     // Because these are static they will persist after the function exectution
@@ -121,11 +120,14 @@ void *run_producer(void *ptr)
             ring_buffer_err_t er = rb_test(rb);
             if (er != RB_ERR_FULL)
             {
+                
                 string = static_string_producer("string",i);
                 if(string) {
                     rb_add(rb, (uint64_t)string);
                 }
                 else {
+                    // This will happen if there are no more free slots
+                    // This will yeaild the thread and allow the consuner to unlock resources
                     sleep(0.5);
                 }
 
