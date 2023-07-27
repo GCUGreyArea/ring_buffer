@@ -102,7 +102,10 @@ void *run_consumer(void *ptr)
             strcpy(local, str->string);
             sprintf(addr, "%p", str);
 
-            // Decrement the read count so the producer can move on.
+            // Because this will not experience contention due to code ordering,
+            // this is OK. In the normal run of things however we would wat to
+            // make this atomic or use a lock to guard against two threads
+            // writing and reading simultaniously.
             str->clear = true;
 
             printf("string: %s, slot %s\n", local, addr);
