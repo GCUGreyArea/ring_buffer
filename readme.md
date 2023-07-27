@@ -117,6 +117,21 @@ used due to the ease with which the end points in the array can be calculated
 using bit wise arithmatic and teh indicies wraped efficiently.
 
 
+### Static buffer API
+
+You cabn also create a static ring buffer (one that is alocated from the stack rather than the heap) by using the macro
+
+```c
+#define STATIC_BUFFER(size, name) \
+    const size_t s = pow(2, ceil(log(size)/log(2))); \
+    uint64_t ar[s]; \
+    ring_buffer_t name = {ar,0,0,s,0,true}
+```
+
+Please note carfully that no attempt is made to insure there are enough stack resources to satisfy the the variable declaraation. It is left entirely to the used to not ask for more resources than exists. 
+
+Also note that a stack created buffer guards against having `rb_teardown` called on it by seting a flag that it can test during teardown.
+
 ## Testing the capacity of the buff
 
 The capacity of the buffer can be tested for by calling `rb_test` which will return one of three values
