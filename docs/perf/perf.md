@@ -1,5 +1,90 @@
 # Perf stats
 
+## simple perf stats 
+
+The following is the report for `perf record ./build/producer_consumer`
+
+```shell
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 3K of event 'cpu-clock:uhpppH'
+# Event count (approx.): 979250000
+#
+# Overhead  Command          Shared Object            Symbol                                                                                                                                                       
+# ........  ...............  .......................  .............................................................................................................................................................
+#
+    16.29%  producer_consum  libproducer_consumer.so  [.] rb_test
+    10.39%  producer_consum  libc-2.31.so             [.] __vfprintf_internal
+     9.65%  producer_consum  producer_consumer        [.] run_consumer
+     6.82%  producer_consum  libasan.so.5.0.0         [.] _ZL13printf_commonPvPKcP13__va_list_tag
+     4.52%  producer_consum  libc-2.31.so             [.] clock_nanosleep@@GLIBC_2.17
+     4.47%  producer_consum  libasan.so.5.0.0         [.] _ZN11__sanitizer15internal_strchrEPKci
+     3.75%  producer_consum  libasan.so.5.0.0         [.] _ZN11__sanitizer15internal_memsetEPvim
+     3.04%  producer_consum  libc-2.31.so             [.] _IO_file_xsputn@@GLIBC_2.2.5
+     2.86%  producer_consum  producer_consumer        [.] 0x0000000000001160
+     2.78%  producer_consum  libc-2.31.so             [.] _IO_default_xsputn
+     2.40%  producer_consum  producer_consumer        [.] run_producer
+     2.25%  producer_consum  libc-2.31.so             [.] __strchrnul_avx2
+     2.09%  producer_consum  libasan.so.5.0.0         [.] __interceptor_vsprintf
+     1.89%  producer_consum  libc-2.31.so             [.] __strlen_avx2
+     1.68%  producer_consum  libasan.so.5.0.0         [.] _ZN11__sanitizer15internal_strlenEPKc
+     1.61%  producer_consum  libproducer_consumer.so  [.] rb_add
+     1.48%  producer_consum  libc-2.31.so             [.] __GI___libc_write
+     1.38%  producer_consum  libc-2.31.so             [.] _IO_vsprintf
+     1.33%  producer_consum  libasan.so.5.0.0         [.] _ZL27maybe_parse_length_modifierPKcPc
+     1.15%  producer_consum  libc-2.31.so             [.] _itoa_word
+     1.10%  producer_consum  libasan.so.5.0.0         [.] __interceptor_vprintf
+     1.07%  producer_consum  libc-2.31.so             [.] __libc_disable_asynccancel
+     1.02%  producer_consum  libproducer_consumer.so  [.] rb_get
+     0.97%  producer_consum  libc-2.31.so             [.] __sleep
+     0.94%  producer_consum  libc-2.31.so             [.] __memmove_avx_unaligned_erms
+     0.87%  producer_consum  libasan.so.5.0.0         [.] __interceptor_sprintf
+     0.84%  producer_consum  libc-2.31.so             [.] _IO_file_write@@GLIBC_2.2.5
+     0.77%  producer_consum  libasan.so.5.0.0         [.] _ZL21format_get_value_sizecPKcb
+     0.77%  producer_consum  libc-2.31.so             [.] _IO_str_init_static_internal
+     0.74%  producer_consum  libc-2.31.so             [.] _IO_old_init
+     0.71%  producer_consum  libc-2.31.so             [.] _IO_do_write@@GLIBC_2.2.5
+     0.69%  producer_consum  libc-2.31.so             [.] _IO_setb
+     0.69%  producer_consum  libc-2.31.so             [.] __libc_enable_asynccancel
+     0.69%  producer_consum  libc-2.31.so             [.] __nanosleep
+     0.64%  producer_consum  libc-2.31.so             [.] _IO_no_init
+     0.64%  producer_consum  libc-2.31.so             [.] __mempcpy_avx_unaligned_erms
+     0.61%  producer_consum  libasan.so.5.0.0         [.] __interceptor_printf
+     0.59%  producer_consum  libasan.so.5.0.0         [.] _ZL20format_get_char_sizecPKc
+     0.59%  producer_consum  libasan.so.5.0.0         [.] __interceptor_strcpy.part.0
+     0.51%  producer_consum  libc-2.31.so             [.] __strcpy_avx2
+     0.36%  producer_consum  libc-2.31.so             [.] 0x0000000000022390
+     0.36%  producer_consum  libpthread-2.31.so       [.] _pthread_cleanup_pop_restore
+     0.31%  producer_consum  libc-2.31.so             [.] vprintf
+     0.28%  producer_consum  libpthread-2.31.so       [.] _pthread_cleanup_push_defer
+     0.26%  producer_consum  libc-2.31.so             [.] _IO_file_overflow@@GLIBC_2.2.5
+     0.20%  producer_consum  libc-2.31.so             [.] 0x0000000000022460
+     0.18%  producer_consum  libasan.so.5.0.0         [.] 0x0000000000022a58
+     0.15%  producer_consum  producer_consumer        [.] static_string_producer
+     0.13%  producer_consum  libc-2.31.so             [.] 0x00000000000225a0
+     0.13%  producer_consum  producer_consumer        [.] 0x0000000000001120
+     0.10%  producer_consum  libasan.so.5.0.0         [.] __interceptor_strcpy
+     0.05%  producer_consum  libasan.so.5.0.0         [.] _ZN11__sanitizer20SizeClassAllocator32INS_4AP32EE16PopulateFreeListEPNS_14AllocatorStatsEPNS_30SizeClassAllocator32LocalCacheIS2_EEPNS2_13SizeClassInfoEm
+     0.05%  producer_consum  libc-2.31.so             [.] 0x0000000000022394
+     0.05%  producer_consum  producer_consumer        [.] 0x00000000000011a0
+     0.03%  producer_consum  ld-2.31.so               [.] mmap64
+     0.03%  producer_consum  producer_consumer        [.] 0x0000000000001150
+     0.03%  producer_consum  producer_consumer        [.] 0x0000000000001164
+     0.03%  producer_consum  producer_consumer        [.] 0x00000000000011d4
+     0.03%  producer_consum  producer_consumer        [.] 0x00000000000011f0
+
+
+#
+# (Tip: For tracepoint events, try: perf report -s trace_fields)
+#
+(END)
+```
+
+## graph perf stats
+
 The followin is the output for `perf -g ./build/producer_consumer`
 
 ```shell
@@ -579,88 +664,6 @@ The followin is the output for `perf -g ./build/producer_consumer`
 
 #
 # (Tip: Use parent filter to see specific call path: perf report -p <regex>)
-#
-(END)
-```
-
-
-The following is the report for `perf record ./build/producer_consumer`
-
-```shell
-# To display the perf.data header info, please use --header/--header-only options.
-#
-#
-# Total Lost Samples: 0
-#
-# Samples: 3K of event 'cpu-clock:uhpppH'
-# Event count (approx.): 979250000
-#
-# Overhead  Command          Shared Object            Symbol                                                                                                                                                       
-# ........  ...............  .......................  .............................................................................................................................................................
-#
-    16.29%  producer_consum  libproducer_consumer.so  [.] rb_test
-    10.39%  producer_consum  libc-2.31.so             [.] __vfprintf_internal
-     9.65%  producer_consum  producer_consumer        [.] run_consumer
-     6.82%  producer_consum  libasan.so.5.0.0         [.] _ZL13printf_commonPvPKcP13__va_list_tag
-     4.52%  producer_consum  libc-2.31.so             [.] clock_nanosleep@@GLIBC_2.17
-     4.47%  producer_consum  libasan.so.5.0.0         [.] _ZN11__sanitizer15internal_strchrEPKci
-     3.75%  producer_consum  libasan.so.5.0.0         [.] _ZN11__sanitizer15internal_memsetEPvim
-     3.04%  producer_consum  libc-2.31.so             [.] _IO_file_xsputn@@GLIBC_2.2.5
-     2.86%  producer_consum  producer_consumer        [.] 0x0000000000001160
-     2.78%  producer_consum  libc-2.31.so             [.] _IO_default_xsputn
-     2.40%  producer_consum  producer_consumer        [.] run_producer
-     2.25%  producer_consum  libc-2.31.so             [.] __strchrnul_avx2
-     2.09%  producer_consum  libasan.so.5.0.0         [.] __interceptor_vsprintf
-     1.89%  producer_consum  libc-2.31.so             [.] __strlen_avx2
-     1.68%  producer_consum  libasan.so.5.0.0         [.] _ZN11__sanitizer15internal_strlenEPKc
-     1.61%  producer_consum  libproducer_consumer.so  [.] rb_add
-     1.48%  producer_consum  libc-2.31.so             [.] __GI___libc_write
-     1.38%  producer_consum  libc-2.31.so             [.] _IO_vsprintf
-     1.33%  producer_consum  libasan.so.5.0.0         [.] _ZL27maybe_parse_length_modifierPKcPc
-     1.15%  producer_consum  libc-2.31.so             [.] _itoa_word
-     1.10%  producer_consum  libasan.so.5.0.0         [.] __interceptor_vprintf
-     1.07%  producer_consum  libc-2.31.so             [.] __libc_disable_asynccancel
-     1.02%  producer_consum  libproducer_consumer.so  [.] rb_get
-     0.97%  producer_consum  libc-2.31.so             [.] __sleep
-     0.94%  producer_consum  libc-2.31.so             [.] __memmove_avx_unaligned_erms
-     0.87%  producer_consum  libasan.so.5.0.0         [.] __interceptor_sprintf
-     0.84%  producer_consum  libc-2.31.so             [.] _IO_file_write@@GLIBC_2.2.5
-     0.77%  producer_consum  libasan.so.5.0.0         [.] _ZL21format_get_value_sizecPKcb
-     0.77%  producer_consum  libc-2.31.so             [.] _IO_str_init_static_internal
-     0.74%  producer_consum  libc-2.31.so             [.] _IO_old_init
-     0.71%  producer_consum  libc-2.31.so             [.] _IO_do_write@@GLIBC_2.2.5
-     0.69%  producer_consum  libc-2.31.so             [.] _IO_setb
-     0.69%  producer_consum  libc-2.31.so             [.] __libc_enable_asynccancel
-     0.69%  producer_consum  libc-2.31.so             [.] __nanosleep
-     0.64%  producer_consum  libc-2.31.so             [.] _IO_no_init
-     0.64%  producer_consum  libc-2.31.so             [.] __mempcpy_avx_unaligned_erms
-     0.61%  producer_consum  libasan.so.5.0.0         [.] __interceptor_printf
-     0.59%  producer_consum  libasan.so.5.0.0         [.] _ZL20format_get_char_sizecPKc
-     0.59%  producer_consum  libasan.so.5.0.0         [.] __interceptor_strcpy.part.0
-     0.51%  producer_consum  libc-2.31.so             [.] __strcpy_avx2
-     0.36%  producer_consum  libc-2.31.so             [.] 0x0000000000022390
-     0.36%  producer_consum  libpthread-2.31.so       [.] _pthread_cleanup_pop_restore
-     0.31%  producer_consum  libc-2.31.so             [.] vprintf
-     0.28%  producer_consum  libpthread-2.31.so       [.] _pthread_cleanup_push_defer
-     0.26%  producer_consum  libc-2.31.so             [.] _IO_file_overflow@@GLIBC_2.2.5
-     0.20%  producer_consum  libc-2.31.so             [.] 0x0000000000022460
-     0.18%  producer_consum  libasan.so.5.0.0         [.] 0x0000000000022a58
-     0.15%  producer_consum  producer_consumer        [.] static_string_producer
-     0.13%  producer_consum  libc-2.31.so             [.] 0x00000000000225a0
-     0.13%  producer_consum  producer_consumer        [.] 0x0000000000001120
-     0.10%  producer_consum  libasan.so.5.0.0         [.] __interceptor_strcpy
-     0.05%  producer_consum  libasan.so.5.0.0         [.] _ZN11__sanitizer20SizeClassAllocator32INS_4AP32EE16PopulateFreeListEPNS_14AllocatorStatsEPNS_30SizeClassAllocator32LocalCacheIS2_EEPNS2_13SizeClassInfoEm
-     0.05%  producer_consum  libc-2.31.so             [.] 0x0000000000022394
-     0.05%  producer_consum  producer_consumer        [.] 0x00000000000011a0
-     0.03%  producer_consum  ld-2.31.so               [.] mmap64
-     0.03%  producer_consum  producer_consumer        [.] 0x0000000000001150
-     0.03%  producer_consum  producer_consumer        [.] 0x0000000000001164
-     0.03%  producer_consum  producer_consumer        [.] 0x00000000000011d4
-     0.03%  producer_consum  producer_consumer        [.] 0x00000000000011f0
-
-
-#
-# (Tip: For tracepoint events, try: perf report -s trace_fields)
 #
 (END)
 ```
