@@ -11,7 +11,7 @@
 
 typedef struct st_container {
     char * string;
-    int * read_cnt;
+    bool clear;
     pthread_mutex_t* lock;
 } st_container_t;
 /**
@@ -23,49 +23,45 @@ typedef struct st_container {
  * @param id id to use as the next part
  * @return const char* 
  */
+
+
 static const st_container_t * static_string_producer(char * value, int id) {
 
     // Because these are static they will persist after the function exectution
     // terminates! Current ID keeps track of how many times we have been called
     // and is used to index into the string store.
-    static int current_id = 0;
-    static int cnt = 0;
+    int current_id = 0;
 
     // RB_SIZE string ogf 10 characters each!
-    static char string_back[RB_SIZE][10];
+    static char strings[RB_SIZE][30];
     static st_container_t containers[RB_SIZE];
     static pthread_mutex_t lock;
 
-
-    for(size_t i=0;i<RB_SIZE;i++) {
-        containers[i].lock = &lock;
-        containers[i].read_cnt = &cnt;
+    while(!containers[current_id++].clear && current_id != RB_SIZE) {
+        printf("testing %d\n",current_id);
     }
-    // If things are still waiting and we don't have space
-    // bail...
-    if(cnt == RB_SIZE) {
-        printf("returning NULL\n");
+
+    if(current_id == RB_SIZE){
         return NULL;
     }
 
-    // If the strings have been consumed we can go back to the start
-    if(current_id == RB_SIZE) {
-        current_id = 0;
-    }
+    pthread_mutex_lock(&lock);
+    char * str = strings[current_id];
+    containers[current_id].string = str;
+    containers[current_id].lock = &lock;
+    containers[current_id].clear = true;
 
-    char * str = string_back[current_id];
+
+    
     sprintf(str,"%s:%d", value,id);
 
-    pthread_mutex_lock(&lock);
-    cnt++;
-
-    // We pass in the address of cnt so that updates are reflected in this
-    // function!
-    containers[current_id].string = str;
+    // reset the flag
+    containers[current_id].clear = false;
+    st_container_t * ret =  &containers[current_id++];
 
     pthread_mutex_unlock(&lock);
     
-    return &containers[current_id++];
+    return ret;
 }
 
 /**
@@ -86,21 +82,20 @@ void *run_consumer(void *ptr)
         {
             uint64_t val = rb_get(rb);
             st_container_t *str = (st_container_t*)val;
-
+        
             pthread_mutex_lock(str->lock);
 
             // Decrement the read count so the producer can move on.
-            int v = --*(str->read_cnt);
+            str->clear = true;
 
             pthread_mutex_unlock(str->lock);
-            printf("received %s count %d\n", str->string, v+1);
+            printf("received %s\n", str->string);
         }
         else
         {
             printf("consummer sleeping (1): %d\n",inc++); 
             sleep(2);
         }
-
     }
 
     return ptr;
@@ -126,24 +121,15 @@ void *run_producer(void *ptr)
             ring_buffer_err_t er = rb_test(rb);
             if (er != RB_ERR_FULL)
             {
-                goto start;
-            retry:
-                printf("retrying\n");
-
-            start:
-
                 string = static_string_producer("string",i);
                 if(string) {
                     rb_add(rb, (uint64_t)string);
-
                 }
                 else {
-                    sleep(0.1);
-                    goto retry;
+                    sleep(0.5);
                 }
-            }
 
-            sleep(0.1);
+            }
         }
     }
 
