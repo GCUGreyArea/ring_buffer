@@ -86,13 +86,15 @@ void *run_consumer(void *ptr)
 
     while (true)
     {
-
         ring_buffer_err_t er = rb_test(rb);
         if (er == RB_ERR_OK || er == RB_ERR_FULL)
         {
             uint64_t val = rb_get(rb);
-            if(val == 0) {
+            // Not sure why, possibly a race condition? ODD.
+            if (val == 0)
+            {
                 printf("empty slot?\n");
+                sleep(3);
                 continue;
             }
 
@@ -125,27 +127,14 @@ void *run_producer(void *ptr)
 {
     printf("running producer\n");
     ring_buffer_t *rb = (ring_buffer_t *)ptr;
-    const st_container_t *string = NULL;
 
     int i = 0;
     while (true)
     {
-        ring_buffer_err_t er = rb_test(rb);
-        if (er != RB_ERR_FULL)
+        if (rb_test(rb))
         {
-
-            string = static_string_producer("string", i++);
-            if (string)
-            {
-                rb_add(rb, (uint64_t)string);
-                i &= (RB_SIZE - 1);
-            }
-            else
-            {
-                // This will happen if there are no more free slots
-                // This will yeaild the thread and allow the consuner to unlock resources
-                sleep(1);
-            }
+            rb_add(rb, (uint64_t)static_string_producer("string", i++));
+            i &= (RB_SIZE - 1);
         }
     }
 
