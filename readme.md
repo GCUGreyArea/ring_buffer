@@ -174,3 +174,5 @@ been removed from the output for ease of reading.
      1.04%  producer_consum  libproducer_consumer.so  [.] rb_add
      0.99%  producer_consum  libproducer_consumer.so  [.] rb_get
 ```
+
+Full stats can be viewed at [docs/perf/perf.md](docs/perf/perf.md)
