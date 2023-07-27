@@ -14,7 +14,6 @@ typedef struct st_container
 {
     char string[15];       // The string being transmited
     bool clear;            // clear flag
-    pthread_mutex_t *lock; // The mutex lock
 } st_container_t;
 
 /**
@@ -38,7 +37,6 @@ static const st_container_t *static_string_producer(char *value, int id)
     // buffer because we know it's a power of 2 size
     current_id &= (current_id & (RB_SIZE-1));
 
-    static pthread_mutex_t lock;
     static st_container_t containers[RB_SIZE];
     static bool init = false;
 
@@ -47,7 +45,6 @@ static const st_container_t *static_string_producer(char *value, int id)
     {
         for (size_t i = 0; i < RB_SIZE; i++)
         {
-            containers[i].lock = &lock;
             containers[i].clear = true;
         }
 
@@ -56,7 +53,6 @@ static const st_container_t *static_string_producer(char *value, int id)
 
     // we need to make sure that the slot is free before we lock  
     int count = 0;
-    pthread_mutex_lock(&lock);
     while (containers[current_id].clear == false && current_id != RB_SIZE)
     {
         count++;
@@ -65,27 +61,14 @@ static const st_container_t *static_string_producer(char *value, int id)
         {
             // We have cycled trhrough all the slots, give the reader a chance
             // to catch up by sleeping whch yeilds control to other threads
-            pthread_mutex_unlock(&lock);
-            sleep(0.5);
+            sleep(1);
             count = 0;
-            pthread_mutex_lock(&lock);
         }
     }
-
     
-    // containers[current_id].string = str;
-    // containers[current_id].lock = &lock;  // pass in a pointer to our lock
     containers[current_id].clear = false; // and mark this as to be read
-
     sprintf(containers[current_id].string, "%s:%d", value, id);
-
-    // reset the flag
-    // containers[current_id].clear = false;
-    st_container_t *ret = &containers[current_id++];
-
-    pthread_mutex_unlock(&lock);
-
-    return ret;
+    return &containers[current_id++];
 }
 
 /**
@@ -98,7 +81,6 @@ void *run_consumer(void *ptr)
 {
     printf("running consumer\n");
     ring_buffer_t *rb = (ring_buffer_t *)ptr;
-    int inc = 0;
     while (true)
     {
         ring_buffer_err_t er = rb_test(rb);
@@ -107,18 +89,13 @@ void *run_consumer(void *ptr)
             uint64_t val = rb_get(rb);
             st_container_t *str = (st_container_t *)val;
 
-            pthread_mutex_lock(str->lock);
-
             // Decrement the read count so the producer can move on.
             str->clear = true;
 
             printf("received %s @ (%p=>%p)\n", str->string,str,str->string);
-
-            pthread_mutex_unlock(str->lock);
         }
         else
         {
-            printf("consummer sleeping (1): %d\n", inc++);
             sleep(0.5);
         }
     }
