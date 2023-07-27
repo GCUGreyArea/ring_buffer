@@ -119,7 +119,7 @@ ring_buffer_err_t rb_test(ring_buffer_t *rb)
     {
         return RB_ERR_NO_DATA;
     }
-    else if (rb->items + 1 == rb->size)
+    else if (rb->items == rb->size-1)
     {
         return RB_ERR_FULL;
     }
