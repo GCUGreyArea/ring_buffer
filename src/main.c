@@ -87,7 +87,6 @@ void *run_consumer(void *ptr)
     while (true)
     {
         ring_buffer_err_t er = rb_test(rb);
-
         if(er == RB_ERR_FULL || er == RB_ERR_OK) {
             uint64_t val = rb_get(rb);
             // Not sure why, possibly a race condition? ODD.
