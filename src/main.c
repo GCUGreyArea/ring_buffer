@@ -8,66 +8,91 @@
 
 #define RB_SIZE 32
 
-
-typedef struct st_container {
-    char * string;
-    bool clear;
-    pthread_mutex_t* lock;
+// Container structure to allow synchronisation between the producer and
+// consumer threads / processes.
+typedef struct st_container
+{
+    char string[15];       // The string being transmited
+    bool clear;            // clear flag
+    pthread_mutex_t *lock; // The mutex lock
 } st_container_t;
 
 /**
  * @brief Generate a static string without and use one from a local memory from
- * a local store rathern that using malloced heap memory 
+ * a local store rathern that using malloced heap memory
  *
- * @param consumed flagg indicating that the previous strings have been consumed  
+ * @param consumed flagg indicating that the previous strings have been consumed
  * @param value value to use as tghe first part of the string
  * @param id id to use as the next part
- * @return const char* 
+ * @return const char*
  */
-static const st_container_t * static_string_producer(char * value, int id) {
+static const st_container_t *static_string_producer(char *value, int id)
+{
 
     // Because these are static they will persist after the function exectution
     // terminates! Current ID keeps track of how many times we have been called
-    // and is used to index into the string store.
-    int current_id = 0;
+    // and is used to index into the message store.
+    static int current_id = 0;
 
-    // RB_SIZE string ogf 10 characters each!
-    static char strings[RB_SIZE][30];
-    static st_container_t containers[RB_SIZE];
+    // We want to rotate though the IDs so we use the same trick as the ring
+    // buffer because we know it's a power of 2 size
+    current_id &= (current_id & (RB_SIZE-1));
+
     static pthread_mutex_t lock;
+    static st_container_t containers[RB_SIZE];
+    static bool init = false;
 
-    while(!containers[current_id++].clear && current_id != RB_SIZE) {
-        printf("testing %d\n",current_id);
+    // This will ony run once
+    if (!init)
+    {
+        for (size_t i = 0; i < RB_SIZE; i++)
+        {
+            containers[i].lock = &lock;
+            containers[i].clear = true;
+        }
+
+        init = true;
     }
 
-    if(current_id == RB_SIZE){
-        return NULL;
-    }
-
+    // we need to make sure that the slot is free before we lock  
+    int count = 0;
     pthread_mutex_lock(&lock);
-    char * str = strings[current_id];
-    containers[current_id].string = str;
-    containers[current_id].lock = &lock;
-    containers[current_id].clear = true;
-
+    while (containers[current_id].clear == false && current_id != RB_SIZE)
+    {
+        count++;
+        current_id &= (current_id & (RB_SIZE-1));
+        if(count == RB_SIZE) 
+        {
+            // We have cycled trhrough all the slots, give the reader a chance
+            // to catch up by sleeping whch yeilds control to other threads
+            pthread_mutex_unlock(&lock);
+            sleep(0.5);
+            count = 0;
+            pthread_mutex_lock(&lock);
+        }
+    }
 
     
-    sprintf(str,"%s:%d", value,id);
+    // containers[current_id].string = str;
+    // containers[current_id].lock = &lock;  // pass in a pointer to our lock
+    containers[current_id].clear = false; // and mark this as to be read
+
+    sprintf(containers[current_id].string, "%s:%d", value, id);
 
     // reset the flag
-    containers[current_id].clear = false;
-    st_container_t * ret =  &containers[current_id++];
+    // containers[current_id].clear = false;
+    st_container_t *ret = &containers[current_id++];
 
     pthread_mutex_unlock(&lock);
-    
+
     return ret;
 }
 
 /**
  * @brief Called as the consumer thread
- * 
- * @param ptr 
- * @return void* 
+ *
+ * @param ptr
+ * @return void*
  */
 void *run_consumer(void *ptr)
 {
@@ -80,32 +105,32 @@ void *run_consumer(void *ptr)
         if (er == RB_ERR_OK || er == RB_ERR_FULL)
         {
             uint64_t val = rb_get(rb);
-            st_container_t *str = (st_container_t*)val;
-        
+            st_container_t *str = (st_container_t *)val;
+
             pthread_mutex_lock(str->lock);
 
             // Decrement the read count so the producer can move on.
             str->clear = true;
 
+            printf("received %s @ (%p=>%p)\n", str->string,str,str->string);
+
             pthread_mutex_unlock(str->lock);
-            printf("received %s\n", str->string);
         }
         else
         {
-            printf("consummer sleeping (1): %d\n",inc++); 
-            sleep(2);
+            printf("consummer sleeping (1): %d\n", inc++);
+            sleep(0.5);
         }
     }
 
     return ptr;
 }
 
-
 /**
  * @brief Called as the producer thread
- * 
- * @param ptr 
- * @return void* 
+ *
+ * @param ptr
+ * @return void*
  */
 void *run_producer(void *ptr)
 {
@@ -113,24 +138,25 @@ void *run_producer(void *ptr)
     ring_buffer_t *rb = (ring_buffer_t *)ptr;
     const st_container_t *string = NULL;
 
+    int i = 0;
     while (true)
     {
-        for (int i = 1; i < RB_SIZE; i++)
+        ring_buffer_err_t er = rb_test(rb);
+        if (er != RB_ERR_FULL)
         {
-            ring_buffer_err_t er = rb_test(rb);
-            if (er != RB_ERR_FULL)
-            {
-                
-                string = static_string_producer("string",i);
-                if(string) {
-                    rb_add(rb, (uint64_t)string);
-                }
-                else {
-                    // This will happen if there are no more free slots
-                    // This will yeaild the thread and allow the consuner to unlock resources
-                    sleep(0.5);
-                }
 
+            string = static_string_producer("string", i++);
+            if (string)
+            {
+                rb_add(rb, (uint64_t)string);
+                i &= (RB_SIZE-1);
+
+            }
+            else
+            {
+                // This will happen if there are no more free slots
+                // This will yeaild the thread and allow the consuner to unlock resources
+                sleep(1);
             }
         }
     }
@@ -139,14 +165,14 @@ void *run_producer(void *ptr)
 }
 
 /**
- * @brief Run two simltanious process as producer and consumer 
+ * @brief Run two simltanious process as producer and consumer
  *
  * @note For a better understanding of pthreads see
  * https://www.cs.cmu.edu/afs/cs/academic/class/15492-f07/www/pthreads.html
  *
- * @param argc 
- * @param argv 
- * @return int 
+ * @param argc
+ * @param argv
+ * @return int
  */
 int main(int argc, const char **argv)
 {
@@ -154,7 +180,7 @@ int main(int argc, const char **argv)
     ring_buffer_err_t er = rb_init(&rb, RB_SIZE);
     if (er != RB_ERR_OK)
     {
-        printf("Failed to initialise ring buffer: %d\n",er);
+        printf("Failed to initialise ring buffer: %d\n", er);
         abort();
     }
 
