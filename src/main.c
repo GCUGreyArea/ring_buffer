@@ -33,7 +33,7 @@ void int_handler(int value)
 // consumer threads / processes.
 typedef struct st_container
 {
-    char string[15]; // The string being transmited
+    char string[20]; // The string being transmited
     bool clear;      // clear flag
 } st_container_t;
 
