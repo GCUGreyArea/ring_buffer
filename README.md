@@ -180,5 +180,7 @@ Full stats can be viewed at [docs/perf/perf.md](docs/perf/perf.md)
 
 ## License 
 
+This software is licensed under the `GNU GENERAL PUBLIC LICENSE` version 3.
+
 Please read the [license](LICENSE.TXT) before using this software or integrating
 it into your project
