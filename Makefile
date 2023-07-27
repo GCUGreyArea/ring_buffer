@@ -31,16 +31,9 @@ CXXFLAGS = -std=c++17 -Wall -g -I$(LIBDIR)/src -I.
 else
 CC     = gcc
 CXX    = g++
-CFLAGS   = -std=c11 -Wall -ggdb3 -I$(LIBDIR)/src -I.
-CXXFLAGS = -std=c++17 -Wall -ggdb3 -I$(LIBDIR)/src -I.
+CFLAGS   = -std=c11 -Wall -ggdb3 -Wall -I$(LIBDIR)/src -I. $(ADD)
+CXXFLAGS = -std=c++17 -Wall -ggdb3 -Wall -I$(LIBDIR)/src -I. $(ADD)
 endif
-
-ifeq ($(SANITIZE),true)
-	CFLAGS += -fsanitize=address
-	CXXFLAGS += -fsanitize=address
-	LNK = -lasan 
-endif
-
 
 export TESTDIR 
 export BENCHDIR
@@ -114,10 +107,10 @@ project:
 	make
 
 sanitize:
-	make clean && SANITIZE=true make
+	make clean && SANITIZE=true ADD="-g -fsanitize=address" make
 
 rebuild: 
-	make clean && make
+	make clean && ADD=-O3 make
 
 help:
 	@echo "\n\n"
