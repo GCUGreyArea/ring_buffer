@@ -79,7 +79,6 @@ static const st_container_t *static_string_producer(char *value, int id)
  */
 void *run_consumer(void *ptr)
 {
-    printf("running consumer\n");
     ring_buffer_t *rb = (ring_buffer_t *)ptr;
     char local[30];
     char addr[17];
@@ -123,7 +122,6 @@ void *run_consumer(void *ptr)
  */
 void *run_producer(void *ptr)
 {
-    printf("running producer\n");
     ring_buffer_t *rb = (ring_buffer_t *)ptr;
 
     int i = 0;
