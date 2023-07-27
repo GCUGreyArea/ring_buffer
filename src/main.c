@@ -12,6 +12,7 @@
 typedef struct st_container {
     char * string;
     int * read_cnt;
+    pthread_mutex_t* lock;
 } st_container_t;
 /**
  * @brief Generate a static string without and use one from a local memory from
@@ -33,10 +34,17 @@ static const st_container_t * static_string_producer(char * value, int id) {
     // RB_SIZE string ogf 10 characters each!
     static char string_back[RB_SIZE][10];
     static st_container_t containers[RB_SIZE];
+    static pthread_mutex_t lock;
 
+
+    for(size_t i=0;i<RB_SIZE;i++) {
+        containers[i].lock = &lock;
+        containers[i].read_cnt = &cnt;
+    }
     // If things are still waiting and we don't have space
     // bail...
     if(cnt == RB_SIZE) {
+        printf("returning NULL\n");
         return NULL;
     }
 
@@ -48,12 +56,14 @@ static const st_container_t * static_string_producer(char * value, int id) {
     char * str = string_back[current_id];
     sprintf(str,"%s:%d", value,id);
 
+    pthread_mutex_lock(&lock);
     cnt++;
 
     // We pass in the address of cnt so that updates are reflected in this
     // function!
-    containers[current_id].read_cnt = &cnt;
     containers[current_id].string = str;
+
+    pthread_mutex_unlock(&lock);
     
     return &containers[current_id++];
 }
@@ -77,17 +87,20 @@ void *run_consumer(void *ptr)
             uint64_t val = rb_get(rb);
             st_container_t *str = (st_container_t*)val;
 
+            pthread_mutex_lock(str->lock);
+
             // Decrement the read count so the producer can move on.
             int v = --*(str->read_cnt);
-            printf("received %s count %d\n", str->string, v);
+
+            pthread_mutex_unlock(str->lock);
+            printf("received %s count %d\n", str->string, v+1);
         }
         else
         {
             printf("consummer sleeping (1): %d\n",inc++); 
-            sleep(1);
+            sleep(2);
         }
 
-               
     }
 
     return ptr;
@@ -125,13 +138,13 @@ void *run_producer(void *ptr)
 
                 }
                 else {
-                    sleep(0.5);
+                    sleep(0.1);
                     goto retry;
                 }
             }
-        }
 
-        sleep(1);
+            sleep(0.1);
+        }
     }
 
     return ptr;
