@@ -50,7 +50,8 @@ static const st_container_t * static_string_producer(char * value, int id) {
 
     cnt++;
 
-    // We pass in the address so that updates are reflected in this function!
+    // We pass in the address of read_cnt so that updates are reflected in this
+    // function!
     containers[current_id].read_cnt = &cnt;
     containers[current_id].string = str;
     
