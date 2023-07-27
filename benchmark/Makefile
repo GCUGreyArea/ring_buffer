@@ -13,17 +13,17 @@ OBJ := $(patsubst %.cpp,$(BUILD)/%.o,$(CXSRC)) $(patsubst %.c,$(BUILD)/%.o,$(CSR
 LIBRARIES = -lpthread -lbenchmark -lbenchmark_main
 UNAME := $(shell uname -s)
 
-ifeq ($(UNAME), Darwin)
-CC       = cc
-CXX      = c++
-CFLAGS   = -std=c11 -Wall -fsanitize=address -I$(LIBDIR)/src
-CXXFLAGS = -std=c++17 -Wall -fsanitize=address -I$(LIBDIR)/src
-else
-CC     = gcc
-CXX    = g++
-CFLAGS   = -std=c11 -Wall -fsanitize=address -I$(LIBDIR)/src
-CXXFLAGS = -std=c++17 -Wall -fsanitize=address -I$(LIBDIR)/src
-endif
+# ifeq ($(UNAME), Darwin)
+# CC       = cc
+# CXX      = c++
+# CFLAGS   = -std=c11 -Wall 
+# CXXFLAGS = -std=c++17 -Wall 
+# else
+# CC     = gcc
+# CXX    = g++
+# CFLAGS   = -std=c11 -Wall  -I$(LIBDIR)/src
+# CXXFLAGS = -std=c++17 -Wall -fsanitize=address -I$(LIBDIR)/src
+# endif
 
 all:  build $(TARGET) $(OBJ) $(LIBDEP)
 

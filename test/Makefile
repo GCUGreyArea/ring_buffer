@@ -16,17 +16,17 @@ COBJ      := $(patsubst %.c,$(BUILD)/%.o,$(CSRC))
 LIBRARIES := -lgtest -lpthread -lglog
 UNAME     := $(shell uname -s)
 
-ifeq ($(UNAME), Darwin)
-CC       = cc
-CXX      = c++
-CFLAGS   = -std=c11 -Wall -g -fsanitize=address -I$(LIBDIR)/src 
-CXXFLAGS = -std=c++17 -Wall -g -fsanitize=address -I$(LIBDIR)/src 
-else
-CC     = gcc
-CXX    = g++
-CFLAGS   = -std=c11 -Wall -g -fsanitize=address -I$(LIBDIR)/src 
-CXXFLAGS = -std=c++17 -Wall -g -fsanitize=address -I$(LIBDIR)/src 
-endif
+# ifeq ($(UNAME), Darwin)
+# CC       = cc
+# CXX      = c++
+# CFLAGS   = -std=c11 -Wall -g -I$(LIBDIR)/src 
+# CXXFLAGS = -std=c++17 -Wall -g -I$(LIBDIR)/src 
+# else
+# CC     = gcc
+# CXX    = g++
+# CFLAGS   = -std=c11 -Wall -g -I$(LIBDIR)/src 
+# CXXFLAGS = -std=c++17 -Wall -g -I$(LIBDIR)/src 
+# endif
 
 LNK = -Wl,-rpath,$(LIB)/build
 

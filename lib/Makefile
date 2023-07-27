@@ -21,20 +21,11 @@ HDRINST = /usr/local/include
 OBJ   := $(patsubst %.cpp,$(BUILD)/%.o,$(CXSRC)) $(patsubst %.c,$(BUILD)/%.o,$(CSRC))
 UNAME := $(shell uname -s)
 
-ifeq ($(UNAME), Darwin)
-CC       = cc
-CXX      = c++
-CFLAGS   = -std=c11 -Wall -g -fPIC -fsanitize=address 
-CXXFLAGS = -std=c++17 -Wall -g -fPIC -fsanitize=address 
-else
-CC     = gcc
-CXX    = g++
-CFLAGS   = -std=c11 -Wall -g -fPIC -fsanitize=address 
-CXXFLAGS = -std=c++17 -Wall -g -fPIC -fsanitize=address 
-endif
+CFLAGS += -fPIC
+CXXFLAGS += -fPIC
 
 $(TARGET) : build $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -shared -o $(BUILD)/$(TARGET)
+	$(CC) $(CFLAGS) $(OBJ) -lm -shared -o $(BUILD)/$(TARGET)
 
 all: $(TARGET)
 
