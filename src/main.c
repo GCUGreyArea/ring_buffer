@@ -87,14 +87,14 @@ void *run_consumer(void *ptr)
     while (true)
     {
         ring_buffer_err_t er = rb_test(rb);
-        if (er == RB_ERR_OK || er == RB_ERR_FULL)
-        {
+
+        if(er == RB_ERR_FULL || er == RB_ERR_OK) {
             uint64_t val = rb_get(rb);
             // Not sure why, possibly a race condition? ODD.
             if (val == 0)
             {
                 printf("empty slot?\n");
-                sleep(3);
+                sleep(1);
                 continue;
             }
 
@@ -107,10 +107,6 @@ void *run_consumer(void *ptr)
             str->clear = true;
 
             printf("string: %s, slot %s\n", local, addr);
-        }
-        else
-        {
-            sleep(0.1);
         }
     }
 
@@ -130,11 +126,15 @@ void *run_producer(void *ptr)
 
     int i = 0;
     while (true)
-    {
-        if (rb_test(rb))
+    {   
+        ring_buffer_err_t er = rb_test(rb);
+        if (er == RB_ERR_OK || er == RB_ERR_NO_DATA)
         {
             rb_add(rb, (uint64_t)static_string_producer("string", i++));
             i &= (RB_SIZE - 1);
+        }
+        else {
+            sleep(0.3);
         }
     }
 
