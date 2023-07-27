@@ -4,10 +4,30 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <string.h>
+#include <signal.h>
+#include <execinfo.h>
+#include <errno.h>
 
 #include <libProducerConsumer.h>
 
 #define RB_SIZE 32
+
+volatile bool g_run_flag = true;
+
+void int_handler(int value)
+{
+    printf("signal caught\n");
+    switch (value)
+    {
+    case SIGINT:
+        printf("sigint recieved, terminating\n");
+        g_run_flag = false;
+        break;
+
+    default:
+        break;
+    }
+}
 
 // Container structure to allow synchronisation between the producer and
 // consumer threads / processes.
@@ -28,7 +48,6 @@ typedef struct st_container
  */
 static const st_container_t *static_string_producer(char *value, int id)
 {
-
     // Because these are static they will persist after the function exectution
     // terminates! Current ID keeps track of how many times we have been called
     // and is used to index into the message store.
@@ -83,10 +102,11 @@ void *run_consumer(void *ptr)
     char local[30];
     char addr[17];
 
-    while (true)
+    while (g_run_flag)
     {
         ring_buffer_err_t er = rb_test(rb);
-        if(er == RB_ERR_FULL || er == RB_ERR_OK) {
+        if (er == RB_ERR_FULL || er == RB_ERR_OK)
+        {
             uint64_t val = rb_get(rb);
             // Not sure why, possibly a race condition? ODD.
             if (val == 0)
@@ -123,17 +143,18 @@ void *run_consumer(void *ptr)
 void *run_producer(void *ptr)
 {
     ring_buffer_t *rb = (ring_buffer_t *)ptr;
-
     int i = 0;
-    while (true)
-    {   
+
+    while (g_run_flag)
+    {
         ring_buffer_err_t er = rb_test(rb);
         if (er == RB_ERR_OK || er == RB_ERR_NO_DATA)
         {
             rb_add(rb, (uint64_t)static_string_producer("string", i++));
             i &= (RB_SIZE - 1);
         }
-        else {
+        else
+        {
             sleep(0.3);
         }
     }
@@ -160,6 +181,9 @@ int main(int argc, const char **argv)
         printf("Failed to initialise ring buffer: %d\n", er);
         abort();
     }
+
+    // setup the signal handler
+    signal(SIGINT, int_handler);
 
     pthread_t thread1;
     pthread_t thread2;
