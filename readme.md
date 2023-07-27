@@ -156,3 +156,21 @@ Getting values from the buffer is done via `rb_get`, which will return the value
 at the location, ort `0` if no values are availible. Note that this excludes the
 idea of an `NULL` values having significance. Alternatively the capcaity can be
 tested rior to an add or get call by calling `rb_test`.
+
+
+## performace stats 
+
+Performance stats where gathered on WSL2 using this implementtion
+(producer_consumer) threaded program run with `perf record`. System calls have
+been removed from the output for ease of reading.
+
+```text 
+# Overhead  Command          Shared Object            Symbol                                                                                                                                                       
+# ........  ...............  .......................  ............................
+#
+    19.57%  producer_consum  libproducer_consumer.so  [.] rb_test
+    10.80%  producer_consum  producer_consumer        [.] run_consumer
+     2.78%  producer_consum  producer_consumer        [.] run_producer
+     1.04%  producer_consum  libproducer_consumer.so  [.] rb_add
+     0.99%  producer_consum  libproducer_consumer.so  [.] rb_get
+```
