@@ -176,3 +176,9 @@ been removed from the output for ease of reading.
 ```
 
 Full stats can be viewed at [docs/perf/perf.md](docs/perf/perf.md)
+
+
+## License 
+
+Please read the [license](LICENSE.TXT) before using this software or integrating
+it into your project
