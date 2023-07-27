@@ -106,7 +106,7 @@ ring_buffer_err_t rb_add(ring_buffer_t *rb, uint64_t value)
         // Because this is a bitwise operator we can execute this in a single
         // instruction
         rb->write = (rb->write & (rb->size - 1));
-        rb->items++;
+        __sync_fetch_and_add(&rb->items,1);
         return RB_ERR_OK;
     }
 
@@ -119,7 +119,7 @@ ring_buffer_err_t rb_test(ring_buffer_t *rb)
     {
         return RB_ERR_NO_DATA;
     }
-    else if (rb->items == rb->size-1)
+    else if (rb->items+1 == rb->size)
     {
         return RB_ERR_FULL;
     }
@@ -137,10 +137,10 @@ uint64_t rb_get(ring_buffer_t *rb)
 
     uint64_t val = rb->buffer[rb->read];
     rb->buffer[rb->read++] = 0;
-    rb->items--;
 
     rb->read = (rb->read & (rb->size - 1));
 
+    __sync_fetch_and_add(&rb->items, -1);
     return val;
 }
 

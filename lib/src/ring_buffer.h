@@ -10,12 +10,12 @@
 #include <math.h>
 
 typedef struct ring_buffer {
-    uint64_t * buffer;  // The buffer 
-    size_t write;       // Write point (head of the ring)
-    size_t read;        // Read point (tail of the ring)
-    size_t size;        // Size of the buffer
-    size_t items;       // Items in the buffer
-    bool stat;          // Statically or dynamically assigned
+    uint64_t * buffer;      // The buffer 
+    size_t write;           // Write point (head of the ring)
+    size_t read;            // Read point (tail of the ring)
+    size_t size;            // Size of the buffer
+    volatile size_t items;  // Items in the buffer (make this atomic as it can be accessed by multiple threads)
+    bool stat;              // Statically or dynamically assigned
 } ring_buffer_t;
 
 #define STATIC_BUFFER(size, name) \
