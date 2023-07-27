@@ -206,17 +206,18 @@ TEST(ring_buffer, test_static_allocation)
     rb_teardown(&rb);
 }
 
+
 TEST(ring_buffer, test_huge_static_buffer)
 {
-    #define RB_SIZE 16384
-    STATIC_BUFFER(RB_SIZE,rb);
+    const size_t size = 524288; // 2^19
+    STATIC_BUFFER(size,rb);
 
-    for (size_t i = 1; i < RB_SIZE; i++)
+    for (size_t i = 1; i < size; i++)
     {
         rb_add(&rb, i);
     }
 
-    for (size_t i = 0; i < RB_SIZE; i++)
+    for (size_t i = 0; i < size; i++)
     {
         rb_get(&rb);
     }
