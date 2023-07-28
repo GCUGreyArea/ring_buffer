@@ -72,7 +72,7 @@ static const st_container_t *static_string_producer(char *value, int id)
 
     // we need to make sure that the slot is free before we lock
     int count = 0;
-    while (containers[current_id].clear == false && current_id != RB_SIZE)
+    while (!containers[current_id].clear && current_id != RB_SIZE)
     {
         count++;
         current_id &= (current_id & (RB_SIZE - 1));
@@ -85,7 +85,7 @@ static const st_container_t *static_string_producer(char *value, int id)
         }
     }
 
-    containers[current_id].clear = false; // and mark this as to be read
+    __sync_bool_compare_and_swap (&containers[current_id].clear,true,false); // and mark this as to be read
     sprintf(containers[current_id].string, "%s:%d", value, id);
     return &containers[current_id++];
 }
@@ -125,7 +125,7 @@ void *run_consumer(void *ptr)
             // this is OK. In the normal run of things however we would wat to
             // make this atomic or use a lock to guard against two threads
             // writing and reading simultaniously.
-            str->clear = true;
+           __sync_bool_compare_and_swap(&str->clear,false,true);
 
             printf("string: %s, slot %s\n", local, addr);
         }
